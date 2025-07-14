@@ -1,18 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<title>Document</title>
-	<link rel="stylesheet" href="./css/index.css">
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Book Liker</title>
+    <link rel="stylesheet" href="./css/index.css" />
+    <!--
+      `defer` guarantees the script runs
+      AFTER the HTML is parsed, so
+      document.querySelector("#list") is never null.
+    -->
+    <script src="./js/index.js" defer></script>
+  </head>
 
-	<div id="list-panel">
-		<ul id="list">
+  <body>
+    <div id="list-panel">
+      <ul id="list"></ul>
+    </div>
 
-		</ul>
-	</div>
-	<div id="show-panel"></div>
-	<script type="text/javascript" src="./js/index.js"></script>
-</body>
+    <div id="show-panel"></div>
+  </body>
 </html>

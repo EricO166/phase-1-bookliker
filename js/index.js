@@ -1,51 +1,51 @@
-document.addEventListener("DOMContentLoaded", function () {
-    fetchBooks();
-});
+// ---------- CONFIG -------------------------------------------------------
+const BASE_URL    = "http://localhost:3000";
+const BOOKS_URL   = `http://localhost:3000/books`;
+const CURRENT_USER = { id: 1, username: "pouros" };
 
+// ---------- DOMContentLoaded --------------------------------------------
+document.addEventListener("DOMContentLoaded", fetchBooks);
 
-
-// ----- DOM CACHES --------------------------------------------------------
-const listUl = document.querySelector("#list");
+// ---------- DOM CACHES ---------------------------------------------------
+const listUl   = document.querySelector("#list");
 const showPanel = document.querySelector("#show-panel");
 
-// -------------------------------------------------------------------------
-
-
-// -------------------------------------------------------------------------
-// FETCH & RENDER LIST -----------------------------------------------------
+// ---------- FETCH & RENDER LIST -----------------------------------------
 function fetchBooks() {
-  fetch("http://localhost:3000/books")
+  fetch(BOOKS_URL)
     .then((res) => res.json())
     .then(renderBookList)
     .catch((err) => console.error("Failed to fetch books:", err));
 }
 
 function renderBookList(books) {
-  // Clear any existing <li> elements (helps with hot reloads/tests)
-  listUl.innerHTML = "";
+  listUl.innerHTML = "";           // clear any old <li>s
   books.forEach((book) => {
     const li = document.createElement("li");
     li.textContent = book.title;
     li.addEventListener("click", () => renderBookDetails(book));
     listUl.appendChild(li);
   });
+}
 
+// ---------- SHOW DETAILS -------------------------------------------------
+function renderBookDetails(book) {
+  showPanel.innerHTML = "";  // remove previous book
 
-// -------------------------------------------------------------------------
-// SHOW DETAILS ------------------------------------------------------------
-//function renderBookDetails(book) {
-  showPanel.innerHTML = ""; // wipe previous content
-
+  // Title, cover image, (optional) subtitle
   const title = document.createElement("h2");
   title.textContent = book.title;
 
   const img = document.createElement("img");
-  img.src = book.img_url;
-  img.alt = `${book.title} cover`;
+  img.src  = book.img_url;
+  img.alt  = `${book.title} cover`;
 
-  const subtitle = book.subtitle ? document.createElement("h4") : null;
-  if (subtitle) subtitle.textContent = book.subtitle;
+  //const subtitle =
+    book.subtitle && book.subtitle.trim() !== ""
+      ? Object.assign(document.createElement("h4"), { textContent: book.subtitle })
+      : null;
 
+  // Author + description
   const author = document.createElement("h4");
   author.textContent = `Author: ${book.author}`;
 
@@ -57,23 +57,23 @@ function renderBookList(books) {
   usersHeader.textContent = "Liked by:";
 
   const usersUl = document.createElement("ul");
-  usersUl.id = "users-ul";
   populateUsersUl(usersUl, book.users);
 
-  // Like/unlike button
+  // Like / Unlike button
   const likeBtn = document.createElement("button");
   likeBtn.id = "like-btn";
   likeBtn.textContent = userHasLiked(book) ? "UNLIKE" : "LIKE";
   likeBtn.addEventListener("click", () => handleLikeToggle(book));
 
-  // Append all nodes to show panel
+  // Append everything in order
   showPanel.append(title, img);
-  if (subtitle) showPanel.append(subtitle);
+  //if (subtitle) showPanel.append(subtitle);
   showPanel.append(author, description, usersHeader, usersUl, likeBtn);
 }
 
-//function populateUsersUl(ul, usersArr) {
-  ul.innerHTML = ""; // clear existing
+// ---------- HELPERS ------------------------------------------------------
+function populateUsersUl(ul, usersArr) {
+  ul.innerHTML = "";
   usersArr.forEach((user) => {
     const li = document.createElement("li");
     li.textContent = user.username;
@@ -81,21 +81,20 @@ function renderBookList(books) {
   });
 }
 
-// -------------------------------------------------------------------------
-// LIKE / UNLIKE -----------------------------------------------------------
 function userHasLiked(book) {
   return book.users.some((u) => u.id === CURRENT_USER.id);
 }
 
+// ---------- LIKE / UNLIKE ------------------------------------------------
 function handleLikeToggle(book) {
   const hasLiked = userHasLiked(book);
-  // Compute new users array
-  const updatedUsers = hasLiked
-    ? book.users.filter((u) => u.id !== CURRENT_USER.id)
-    : [...book.users, CURRENT_USER];
 
-  // Send PATCH to backend
-  fetch(`${BOOKS_URL}/${book.id}`, {
+  // Build new users array
+  const updatedUsers = hasLiked
+    ? book.users.filter((u) => u.id !== CURRENT_USER.id) // remove me
+    : [...book.users, CURRENT_USER];                     // add me
+
+  fetch(`http://localhost:3000/books/${book.id}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -105,22 +104,8 @@ function handleLikeToggle(book) {
   })
     .then((res) => res.json())
     .then((updatedBook) => {
-      // Update local book reference (helps when clicking again)
-      Object.assign(book, updatedBook);
-      // Re‑render details to reflect new like state
-      renderBookDetails(updatedBook);
+      Object.assign(book, updatedBook);    // keep local object fresh
+      renderBookDetails(updatedBook);      // redraw panel
     })
     .catch((err) => console.error("PATCH /books/:id failed:", err));
-}
-
-// -------------------------------------------------------------------------
-// EXPORTS (helps the Jest/CodeGrade test runner import functions if needed)
-if (typeof module !== "undefined") {
-  module.exports = {
-    fetchBooks,
-    renderBookList,
-    renderBookDetails,
-    userHasLiked,
-    handleLikeToggle,
-  };
 }
