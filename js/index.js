@@ -1,16 +1,16 @@
-// ---------- CONFIG -------------------------------------------------------
+//  CONFIG
 const BASE_URL    = "http://localhost:3000";
 const BOOKS_URL   = `http://localhost:3000/books`;
 const CURRENT_USER = { id: 1, username: "pouros" };
 
-// ---------- DOMContentLoaded --------------------------------------------
+// DOMContentLoaded
 document.addEventListener("DOMContentLoaded", fetchBooks);
 
-// ---------- DOM CACHES ---------------------------------------------------
+//  DOM CACHES
 const listUl   = document.querySelector("#list");
 const showPanel = document.querySelector("#show-panel");
 
-// ---------- FETCH & RENDER LIST -----------------------------------------
+// FETCH & RENDER LIST
 function fetchBooks() {
   fetch(BOOKS_URL)
     .then((res) => res.json())
@@ -28,7 +28,7 @@ function renderBookList(books) {
   });
 }
 
-// ---------- SHOW DETAILS -------------------------------------------------
+// SHOW DETAILS
 function renderBookDetails(book) {
   showPanel.innerHTML = "";  // remove previous book
 
@@ -62,8 +62,8 @@ function renderBookDetails(book) {
   // Like / Unlike button
   const likeBtn = document.createElement("button");
   likeBtn.id = "like-btn";
-  likeBtn.textContent = userHasLiked(book) ? "UNLIKE" : "LIKE";
   likeBtn.addEventListener("click", () => handleLikeToggle(book));
+  likeBtn.textContent = userHasLiked(book) ? "UNLIKE" : "LIKE";
 
   // Append everything in order
   showPanel.append(title, img);
@@ -71,7 +71,7 @@ function renderBookDetails(book) {
   showPanel.append(author, description, usersHeader, usersUl, likeBtn);
 }
 
-// ---------- HELPERS ------------------------------------------------------
+//  HELPERS
 function populateUsersUl(ul, usersArr) {
   ul.innerHTML = "";
   usersArr.forEach((user) => {
@@ -85,7 +85,7 @@ function userHasLiked(book) {
   return book.users.some((u) => u.id === CURRENT_USER.id);
 }
 
-// ---------- LIKE / UNLIKE ------------------------------------------------
+// LIKE / UNLIKE
 function handleLikeToggle(book) {
   const hasLiked = userHasLiked(book);
 
